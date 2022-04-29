@@ -1,4 +1,5 @@
-package ImportedClasses;
+package ImportedClasses.WavIO;
+
 
 // by Evan X. Merz
 // www.thisisnotalabel.com
