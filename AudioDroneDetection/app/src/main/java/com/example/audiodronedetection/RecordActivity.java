@@ -1,6 +1,5 @@
 package com.example.audiodronedetection;
 
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -11,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import java.io.IOException;
+
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
@@ -20,22 +20,21 @@ import androidx.core.content.ContextCompat;
 
 public class RecordActivity extends AppCompatActivity {
 
-    private Button startbtn, stopbtn, playbtn, stopplay;
+    private Button startbtn, playbtn, stopplay;
     private MediaRecorder mRecorder;
     private MediaPlayer mPlayer;
     private static final String LOG_TAG = "AudioRecording";
     private static String mFileName = null;
     public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
+    private int recordingLength = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record);
         startbtn = (Button)findViewById(R.id.btnRecord);
-        stopbtn = (Button)findViewById(R.id.btnStop);
         playbtn = (Button)findViewById(R.id.btnPlay);
         stopplay = (Button)findViewById(R.id.btnStopPlay);
-        stopbtn.setEnabled(false);
         playbtn.setEnabled(false);
         stopplay.setEnabled(false);
         mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
@@ -45,7 +44,6 @@ public class RecordActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(CheckPermissions()) {
-                    stopbtn.setEnabled(true);
                     startbtn.setEnabled(false);
                     playbtn.setEnabled(false);
                     stopplay.setEnabled(false);
@@ -54,6 +52,21 @@ public class RecordActivity extends AppCompatActivity {
                     mRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
                     mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
                     mRecorder.setOutputFile(mFileName);
+                    mRecorder.setMaxDuration(recordingLength);
+                    mRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
+                        @Override
+                        public void onInfo(MediaRecorder mr, int what, int extra) {
+                            if(what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED)
+                            {
+                                mRecorder.stop();
+                                mRecorder.release();
+                                startbtn.setEnabled(true);
+                                playbtn.setEnabled(true);
+                                stopplay.setEnabled(false);
+                                Toast.makeText(getApplicationContext(), "Recording Stopped", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
                     try {
                         mRecorder.prepare();
                     } catch (IOException e) {
@@ -68,25 +81,11 @@ public class RecordActivity extends AppCompatActivity {
                 }
             }
         });
-        stopbtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                stopbtn.setEnabled(false);
-                startbtn.setEnabled(true);
-                playbtn.setEnabled(true);
-                stopplay.setEnabled(true);
-                mRecorder.stop();
-                mRecorder.release();
-                mRecorder = null;
-                Toast.makeText(getApplicationContext(), "Recording Stopped", Toast.LENGTH_LONG).show();
-            }
-        });
         playbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                stopbtn.setEnabled(false);
                 startbtn.setEnabled(true);
-                playbtn.setEnabled(false);
+                playbtn.setEnabled(true);
                 stopplay.setEnabled(true);
                 mPlayer = new MediaPlayer();
                 try {
@@ -104,7 +103,6 @@ public class RecordActivity extends AppCompatActivity {
             public void onClick(View v) {
                 mPlayer.release();
                 mPlayer = null;
-                stopbtn.setEnabled(false);
                 startbtn.setEnabled(true);
                 playbtn.setEnabled(true);
                 stopplay.setEnabled(false);
