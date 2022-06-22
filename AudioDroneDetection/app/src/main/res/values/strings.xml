@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Audio Drone Detection</string>
+    <string name="LAUNCH_RECORDER">com.example.audiodronedetection.RecordActivity</string>
+    <string name="LAUNCH_MFCC">com.example.audiodronedetection.MFCC.FindmfccActivity</string>
+    <string name="LAUNCH_SVM">com.example.audiodronedetection.SVM.SvmActivity</string>
+    <!-- TODO: Remove or change this placeholder text -->
+
+</resources>
